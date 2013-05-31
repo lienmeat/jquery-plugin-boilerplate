@@ -52,7 +52,7 @@
 	}
 
 	/**
-	*	Init called any time no public method is called
+	* Init called any time no public method is called
 	*/
 	Plugin.prototype.init = function ( options ) {  	
 		this.setOptions( options );
@@ -98,7 +98,7 @@
 			//Lets you run multi-argument methods (if they are public) on the plugin 
 			//(ex: $('#thing').pluginName('example', 'flip', 'jr', {'key': 'value'}); )
 			if( plugin.publicMethods[ methodOrOptions ] ){
-				//1st argument is in public_methods, run it with the rest of the arguments!
+				//1st argument is in publicMethods, run it with the rest of the arguments!
 				plugin[plugin.publicMethods[ methodOrOptions ]].apply( plugin, Array.prototype.slice.call( args, 1 ) );
 			} else if( typeof methodOrOptions === 'object' || ! methodOrOptions ){
 				// Default to "init" if argument is an object or empty
