@@ -1,0 +1,119 @@
+/*
+ *  Project: 
+ *  Description: 
+ *  Author: 
+ *  License: 
+ */
+
+// the semi-colon before function invocation is a safety net against concatenated 
+// scripts and/or other plugins which may not be closed properly.
+;(function ( $, window, undefined ) {
+
+	// undefined is used here as the undefined global variable in ECMAScript 3 is
+	// mutable (ie. it can be changed by someone else). undefined isn't really being
+	// passed in so we can ensure the value of it is truly undefined. In ES5, undefined
+	// can no longer be modified.
+
+	// window and document are passed through as local variables rather than globals
+	// as this (slightly) quickens the resolution process and can be more efficiently
+	// minified (especially when both are regularly referenced in your plugin).
+
+	// Create the defaults once
+	var pluginName = 'defaultPluginName',
+			document = window.document,
+			//public methods are callable via the first argument
+			//of your plugin.  Alias them any way you see fit!
+			publicMethods = {
+				//accessible via $.pluginName('example')
+				'example': 'exampleToAlias',
+			};
+			
+
+	// The actual plugin constructor (leave it alone!)
+	function Plugin( element ) {  	
+		
+		//set the name of the plugin
+		this._name = pluginName;
+
+		//element is accessible here
+		this.element = element;
+
+		//map the public methods to the plugin
+		this.publicMethods = publicMethods;
+
+		//set the defaults
+		this._defaults = $.fn[this._name].options;
+
+		//set options to default
+		this.options = this._defaults;
+
+		//run init with stock options
+		this.init( this.options );
+	}
+
+	/**
+	*	Init called any time no public method is called
+	*/
+	Plugin.prototype.init = function ( options ) {  	
+		this.setOptions( options );
+		// Place initialization logic here
+		// You already have access to the DOM element and the options via the instance, 
+		// e.g., this.element and this.options
+
+	};
+
+	/**
+	* Pass an options object to change options
+	*/
+	Plugin.prototype.setOptions = function( options ) {
+		var options = options || {};
+
+		// jQuery has an extend method which merges the contents of two or 
+		// more objects, storing the result in the first object. The first object
+		// is generally empty as we don't want to alter the default options for
+		// future instances of the plugin
+		this.options = $.extend( {}, $.fn[this._name].options, this.options, options);
+	}
+
+	Plugin.prototype.exampleToAlias = function( argument1, argument2, argument3 ){
+		//a simple test
+		$( this.element ).addClass( argument1 ).addClass( argument2 ).addClass( argument3 );
+	}
+
+	// A really lightweight plugin wrapper around the constructor, 
+	// preventing against multiple instantiations,
+	// while giving tons of cool functionality
+	$.fn[pluginName] = function ( methodOrOptions ) {
+		//we need the arguments of this call to be available after the annonymous function runs!
+		var args = arguments;
+
+		return this.each(function() {
+			if( !$.data( this, 'plugin_' + pluginName ) ) {
+				var plugin = new Plugin( this );
+				$.data( this, 'plugin_' + pluginName, plugin );
+			} else {
+				var plugin = $.data( this, 'plugin_' + pluginName );
+			}
+
+			//Lets you run multi-argument methods (if they are public) on the plugin 
+			//(ex: $('#thing').pluginName('example', 'flip', 'jr', {'key': 'value'}); )
+			if( plugin.publicMethods[ methodOrOptions ] ){
+				//1st argument is in public_methods, run it with the rest of the arguments!
+				plugin[plugin.publicMethods[ methodOrOptions ]].apply( plugin, Array.prototype.slice.call( args, 1 ) );
+			} else if( typeof methodOrOptions === 'object' || ! methodOrOptions ){
+				// Default to "init" if argument is an object or empty
+				plugin.init( methodOrOptions );
+			} else {
+				//otherwise, they did something silly
+				$.error( 'Method ' +  methodOrOptions + ' does not exist on '+pluginName );
+			}
+		});
+	}
+
+	//globally configurable options
+	//which can be over-ridden
+	$.fn[pluginName].options = {
+		"key": "value",		
+	};
+
+}( jQuery, window ));
